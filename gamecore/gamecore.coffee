@@ -6,8 +6,10 @@
 @print = print = console.log.bind(console)
 
 # --------------- Global Variables ---------------
-canvas = document.getElementById("game_canvas")
-ctx = canvas.getContext("2d")
+canvas = document.getElementById("canvas1")
+canvas2 = document.getElementById("canvas2")
+ctx = canvas2.getContext("2d")
+game_ctx = canvas.getContext("2d")
 
 counter = 0
 
@@ -60,28 +62,33 @@ keyup = (e) ->
 init = () ->
 	canvas.width = window.innerWidth
 	canvas.height = window.innerHeight
+	canvas2.width = window.innerWidth
+	canvas2.height = window.innerHeight
 
 	document.addEventListener('keydown', keydown)
 	document.addEventListener('keyup', keyup)
 
 
 updateLogic = (time) ->
+	ACCELERATION = (10 / ups)
+	SPEED_LIMIT = 10
 	counter += 1
 	ship.x -= ship.speed * Math.cos(ship.r)
 	ship.y -= ship.speed * Math.sin(ship.r)
-	
+
 	if keys.right
 		ship.r = (ship.r + (Math.PI / ups)) % (2 * Math.PI)
 	if keys.left
 		ship.r = (ship.r - (Math.PI / ups)) % (2 * Math.PI)
 	if keys.up
-		ship.speed += if ship.speed >= 10 then 0 else (10 / ups)
+		ship.speed += ACCELERATION if ship.speed < SPEED_LIMIT
 	if keys.down
-		ship.speed -= if ship.speed < 0 then 0 else (10 / ups)
+		ship.speed -= ACCELERATION if ship.speed > ACCELERATION
 
 
 last_turn = 0
-updateScreen = (ctx) ->
+updateScreen = () ->
+	window.requestAnimationFrame(updateScreen)
 	# --------------- Clear the screen ---------------
 	background = document.getElementById "background"
 	ctx.drawImage(background1, 0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -108,6 +115,8 @@ updateScreen = (ctx) ->
 	ctx.rotate(-(ship.r - Math.PI/2))
 	ctx.translate(-ship.x, -ship.y)
 
+	game_ctx.drawImage(canvas2, 0, 0)
+
 
 gameloop = (previous_time) ->
 	if not running
@@ -126,12 +135,11 @@ gameloop = (previous_time) ->
 		total_time += update_interval
 		time_accumulator -= update_interval
 
-	updateScreen(ctx)
-
 	setTimeout((-> gameloop(current_time)), render_interval)
 
 init()
 gameloop(0)
+updateScreen()
 
 # --------------- Other Stuff... ---------------
 KEY =
