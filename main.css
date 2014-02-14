@@ -2,3 +2,6 @@ html, body{
 	overflow:hidden;
 	margin: 0px;
 }
+canvas{
+	position: fixed;
+}
