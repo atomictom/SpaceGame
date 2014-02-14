@@ -76,12 +76,19 @@
   };
 
   updateLogic = function(time) {
-    var ACCELERATION, SPEED_LIMIT;
+    var ACCELERATION, SPEED_LIMIT, background;
     ACCELERATION = 10 / ups;
     SPEED_LIMIT = 8;
     counter += 1;
     ship.x -= ship.speed * Math.cos(ship.r);
     ship.y -= ship.speed * Math.sin(ship.r);
+    background = document.getElementById("background3");
+    if (Math.abs(ship.x) > background.width / 2 - edge_buffer.x) {
+      ship.x = -ship.x;
+    }
+    if (Math.abs(ship.y) > background.height / 2 - edge_buffer.y) {
+      ship.y = -ship.y;
+    }
     if (keys.right) {
       ship.r = (ship.r + (Math.PI / ups)) % (2 * Math.PI);
     }

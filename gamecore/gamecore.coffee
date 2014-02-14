@@ -71,6 +71,10 @@ updateLogic = (time) ->
 	ship.x -= ship.speed * Math.cos(ship.r)
 	ship.y -= ship.speed * Math.sin(ship.r)
 
+	background = document.getElementById "background3"
+	ship.x = -ship.x if Math.abs(ship.x) > background.width / 2 - edge_buffer.x
+	ship.y = -ship.y if Math.abs(ship.y) > background.height / 2 - edge_buffer.y
+
 	if keys.right
 		ship.r = (ship.r + (Math.PI / ups)) % (2 * Math.PI)
 	if keys.left
@@ -123,6 +127,7 @@ updateScreen = () ->
 	####################################################
 	ctx.translate(-camera_pos.x, -camera_pos.y)
 	############### Relative Positioning ###############
+	# ctx.strokeRect(-background3.width / 2, -background3.height / 2, background3.width, background3.height)
 
 	# --------------- Select Ship Image ---------------
 	turn = 5 - (ship.speed // 5)
