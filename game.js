@@ -32,14 +32,16 @@
     x: 500,
     y: 300,
     r: Math.PI / 2,
-    speed: 0
+    speed: 0,
+    fire: false
   };
 
   keys = {
     right: false,
     left: false,
     up: false,
-    down: false
+    down: false,
+    space: false
   };
 
   keydown = function(e) {
@@ -52,6 +54,8 @@
         return keys.up = true;
       case KEY.DOWN:
         return keys.down = true;
+      case KEY.SPACE:
+        return keys.space = true;
     }
   };
 
@@ -65,6 +69,8 @@
         return keys.up = false;
       case KEY.DOWN:
         return keys.down = false;
+      case KEY.SPACE:
+        return keys.space = false;
     }
   };
 
@@ -78,7 +84,7 @@
   updateLogic = function(time) {
     var ACCELERATION, SPEED_LIMIT, background;
     ACCELERATION = 10 / ups;
-    SPEED_LIMIT = 8;
+    SPEED_LIMIT = 6;
     counter += 1;
     ship.x -= ship.speed * Math.cos(ship.r);
     ship.y -= ship.speed * Math.sin(ship.r);
@@ -102,9 +108,10 @@
     }
     if (keys.down) {
       if (ship.speed > ACCELERATION) {
-        return ship.speed -= ACCELERATION;
+        ship.speed -= ACCELERATION;
       }
     }
+    return ship.fire = keys.space;
   };
 
   last_turn = 0;
@@ -115,8 +122,8 @@
   };
 
   edge_buffer = {
-    x: 200,
-    y: 200
+    x: 100,
+    y: 100
   };
 
   buffer_diff = {
@@ -125,7 +132,7 @@
   };
 
   updateScreen = function() {
-    var background3, img, suffix, sx, sy, turn;
+    var background3, laser, laser_gradient, laser_pos, ship_image, suffix, sx, sy, turn;
     window.requestAnimationFrame(updateScreen);
     buffer_diff = {
       x_top: ship.x - (camera_pos.x + edge_buffer.x),
@@ -149,8 +156,6 @@
     sx = (background3.width / 2) + camera_pos.x;
     sy = (background3.height / 2) + camera_pos.y;
     ctx.drawImage(background3, sx, sy, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(edge_buffer.x, edge_buffer.y, canvas.width - 2 * edge_buffer.x, canvas.height - 2 * edge_buffer.y);
     ctx.translate(-camera_pos.x, -camera_pos.y);
     turn = 5 - (Math.floor(ship.speed / 5));
     if (turn >= 5) {
@@ -172,12 +177,35 @@
           return "";
       }
     })();
-    img = document.getElementById("fighter" + suffix);
+    ship_image = document.getElementById("fighter" + suffix);
     ctx.translate(ship.x, ship.y);
     ctx.scale(.5, .5);
     ctx.rotate(ship.r - Math.PI / 2);
     ctx.translate(-ship.x, -ship.y);
-    ctx.drawImage(img, ship.x - img.width / 2, ship.y - img.height / 2);
+    ctx.drawImage(ship_image, ship.x - ship_image.width / 2, ship.y - ship_image.height / 2);
+    if (ship.fire) {
+      ship.laser_mount = {
+        x: ship.x,
+        y: ship.y - ship_image.height / 2 + 15
+      };
+      laser = {
+        width: 7,
+        length: 2000
+      };
+      laser_pos = {
+        x: ship.laser_mount.x - laser.width / 2,
+        y: ship.laser_mount.y - laser.length
+      };
+      laser_gradient = ctx.createLinearGradient(0, 0, laser.width, 0);
+      laser_gradient.addColorStop(0, "#FF7777");
+      laser_gradient.addColorStop(.5, "#FF0000");
+      laser_gradient.addColorStop(1, "#FF7777");
+      ctx.fillStyle = laser_gradient;
+      ctx.save();
+      ctx.translate(laser_pos.x, laser_pos.y);
+      ctx.fillRect(0, 0, laser.width, laser.length);
+      ctx.restore();
+    }
     ctx.translate(ship.x, ship.y);
     ctx.rotate(-(ship.r - Math.PI / 2));
     ctx.scale(2, 2);
